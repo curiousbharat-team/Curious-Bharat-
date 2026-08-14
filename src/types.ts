@@ -34,6 +34,9 @@ export interface Batch {
   id: string;
   title: string;
   subtitle: string;
+  showConceptTab?: boolean;
+  showStudyMaterialTab?: boolean;
+  showPracticeTab?: boolean;
   description: string;
   category: string; // e.g. 'JEE Advanced', 'NEET UG', 'Class 12 Boards', 'Foundation'
   isPaid: boolean;

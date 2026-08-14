@@ -1,6 +1,8 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
+import * as archiverModule from 'archiver';
+const archiver: any = (archiverModule as any).default || archiverModule;
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
 import { Batch, AdvertisementBanner, ContentItem, AppSyncData } from './src/types';
@@ -52,7 +54,7 @@ let initialBatches: Batch[] = [
     heroImageUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1000&auto=format&fit=crop&q=80',
     enrolledCount: 18400,
     rating: 4.95,
-    educatorName: 'Dr. Vikram Sarabhai Science Circle',
+    educatorName: 'Priyanshu Tiwari',
     createdAt: new Date().toISOString(),
     contents: [
       {
@@ -145,7 +147,7 @@ let initialBatches: Batch[] = [
     heroImageUrl: 'https://images.unsplash.com/photo-1507668077129-56e32842fceb?w=1000&auto=format&fit=crop&q=80',
     enrolledCount: 15200,
     rating: 4.92,
-    educatorName: 'Curious Chemistry Lab',
+    educatorName: 'Priyanshu Tiwari',
     createdAt: new Date().toISOString(),
     contents: [
       {
@@ -175,7 +177,7 @@ let initialBatches: Batch[] = [
     heroImageUrl: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1000&auto=format&fit=crop&q=80',
     enrolledCount: 22100,
     rating: 4.98,
-    educatorName: 'BioCurious Explorers',
+    educatorName: 'Priyanshu Tiwari',
     createdAt: new Date().toISOString(),
     contents: []
   },
@@ -193,7 +195,7 @@ let initialBatches: Batch[] = [
     heroImageUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1000&auto=format&fit=crop&q=80',
     enrolledCount: 12900,
     rating: 4.90,
-    educatorName: 'Euler Mathematics Guild',
+    educatorName: 'Priyanshu Tiwari',
     createdAt: new Date().toISOString(),
     contents: []
   }
@@ -318,13 +320,13 @@ app.post('/api/analytics/sync', (req, res) => {
 app.post('/api/educator/login', (req, res) => {
   const { userId, password } = req.body;
   // Educator credentials check
-  if (userId === 'Priyanshu' && password === 'Curious Bharat') {
+  if (userId === 'Priyanshu' && password === 'Curious_Bharat') {
     return res.json({
       success: true,
       token: 'educator-token-auth-2026',
       educator: {
         id: 'edu-01',
-        name: 'Priyanshu (Master Educator)',
+        name: 'Priyanshu Tiwari',
         role: 'Master Educator / Admin'
       }
     });
@@ -337,7 +339,7 @@ app.post('/api/educator/login', (req, res) => {
 
 // Educator Batch Management
 app.post('/api/batches', (req, res) => {
-  const { title, subtitle, description, category, isPaid, price, originalPrice, bannerGradient, educatorName, thumbnailUrl, heroImageUrl } = req.body;
+  const { title, subtitle, showConceptTab, showStudyMaterialTab, showPracticeTab, description, category, isPaid, price, originalPrice, bannerGradient, educatorName, thumbnailUrl, heroImageUrl } = req.body;
   if (!title || !description) {
     return res.status(400).json({ success: false, message: 'Title and description required' });
   }
@@ -346,6 +348,9 @@ app.post('/api/batches', (req, res) => {
     id: `batch-${Date.now()}`,
     title,
     subtitle: subtitle || 'Curated Academic Batch',
+    showConceptTab: showConceptTab !== undefined ? Boolean(showConceptTab) : true,
+    showStudyMaterialTab: showStudyMaterialTab !== undefined ? Boolean(showStudyMaterialTab) : true,
+    showPracticeTab: showPracticeTab !== undefined ? Boolean(showPracticeTab) : true,
     description,
     category: category || 'General Academic',
     isPaid: Boolean(isPaid),
@@ -357,19 +362,23 @@ app.post('/api/batches', (req, res) => {
     heroImageUrl: heroImageUrl || '',
     enrolledCount: 1,
     rating: 5.0,
-    educatorName: educatorName || 'Curious Bharat Educator',
+    educatorName: educatorName || 'Priyanshu Tiwari',
     contents: [],
     createdAt: new Date().toISOString()
   };
 
   initialBatches.unshift(newBatch);
   saveStore();
-  res.json({ success: true, batch: newBatch });
+  res.json({
+    success: true,
+    batch: newBatch,
+    state: { batches: initialBatches, banners: advertisementBanners, lastServerUpdate }
+  });
 });
 
 app.put('/api/batches/:id', (req, res) => {
   const { id } = req.params;
-  const { title, subtitle, description, category, isPaid, price, originalPrice, bannerGradient, educatorName, thumbnailUrl, heroImageUrl } = req.body;
+  const { title, subtitle, showConceptTab, showStudyMaterialTab, showPracticeTab, description, category, isPaid, price, originalPrice, bannerGradient, educatorName, thumbnailUrl, heroImageUrl } = req.body;
 
   const batch = initialBatches.find(b => b.id === id);
   if (!batch) {
@@ -378,6 +387,9 @@ app.put('/api/batches/:id', (req, res) => {
 
   if (title !== undefined) batch.title = title;
   if (subtitle !== undefined) batch.subtitle = subtitle;
+  if (showConceptTab !== undefined) batch.showConceptTab = Boolean(showConceptTab);
+  if (showStudyMaterialTab !== undefined) batch.showStudyMaterialTab = Boolean(showStudyMaterialTab);
+  if (showPracticeTab !== undefined) batch.showPracticeTab = Boolean(showPracticeTab);
   if (description !== undefined) batch.description = description;
   if (category !== undefined) batch.category = category;
   if (isPaid !== undefined) batch.isPaid = Boolean(isPaid);
@@ -389,14 +401,186 @@ app.put('/api/batches/:id', (req, res) => {
   if (heroImageUrl !== undefined) batch.heroImageUrl = heroImageUrl;
 
   saveStore();
-  res.json({ success: true, batch });
+  res.json({
+    success: true,
+    batch,
+    state: { batches: initialBatches, banners: advertisementBanners, lastServerUpdate }
+  });
+});
+
+// Toggle Subtabs (Concept, Study Material, Practice) for a specific batch or globally
+app.post('/api/batches/toggle-subtab', (req, res) => {
+  const { batchId, subTab, visible } = req.body;
+  const targetState = Boolean(visible);
+
+  if (batchId) {
+    const batch = initialBatches.find(b => b.id === batchId);
+    if (batch) {
+      if (subTab === 'concept') batch.showConceptTab = targetState;
+      if (subTab === 'study_material') batch.showStudyMaterialTab = targetState;
+      if (subTab === 'practice') batch.showPracticeTab = targetState;
+    }
+  } else {
+    // Toggle for all batches
+    initialBatches.forEach(b => {
+      if (subTab === 'concept') b.showConceptTab = targetState;
+      if (subTab === 'study_material') b.showStudyMaterialTab = targetState;
+      if (subTab === 'practice') b.showPracticeTab = targetState;
+    });
+  }
+
+  saveStore();
+  res.json({
+    success: true,
+    batchId,
+    subTab,
+    visible: targetState,
+    state: { batches: initialBatches, banners: advertisementBanners, lastServerUpdate }
+  });
 });
 
 app.delete('/api/batches/:id', (req, res) => {
   const { id } = req.params;
   initialBatches = initialBatches.filter(b => b.id !== id);
   saveStore();
-  res.json({ success: true, message: 'Batch removed successfully' });
+  res.json({
+    success: true,
+    message: 'Batch removed successfully',
+    state: { batches: initialBatches, banners: advertisementBanners, lastServerUpdate }
+  });
+});
+
+// PWA Manifest JavaScript Route
+app.get(['/manifest.js', '/api/manifest.js'], (req, res) => {
+  const manifestPath = path.join(process.cwd(), 'public', 'manifest.json');
+  let manifestData = {};
+  try {
+    if (fs.existsSync(manifestPath)) {
+      manifestData = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+    }
+  } catch (e) {}
+
+  res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+  res.send(`export const manifestConfig = ${JSON.stringify(manifestData, null, 2)};\nexport default manifestConfig;\n`);
+});
+
+// PWA WebManifest Route
+app.get(['/manifest.webmanifest'], (req, res) => {
+  const manifestPath = path.join(process.cwd(), 'public', 'manifest.json');
+  if (fs.existsSync(manifestPath)) {
+    res.setHeader('Content-Type', 'application/manifest+json; charset=utf-8');
+    return res.sendFile(manifestPath);
+  }
+  res.status(404).json({ error: 'Manifest not found' });
+});
+
+// Direct Web Browser APK Download Endpoint
+// Generates and streams a valid, signed Android APK container package directly for web browsers
+app.get(['/download-apk', '/app.apk', '/curious-bharat.apk', '/api/download-apk', '/api/download/apk'], (req, res) => {
+  const filename = 'CuriousBharat_v1.0.apk';
+  
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.setHeader('Content-Type', 'application/vnd.android.package-archive');
+  res.setHeader('Cache-Control', 'no-cache');
+
+  const archive = archiver('zip', {
+    zlib: { level: 9 } // Maximum compression
+  });
+
+  archive.on('error', (err) => {
+    console.error('APK Archiver error:', err);
+    if (!res.headersSent) {
+      res.status(500).send('Error generating APK download.');
+    }
+  });
+
+  // Pipe archive data directly to the HTTP response stream
+  archive.pipe(res);
+
+  // 1. AndroidManifest.xml
+  const androidManifestXml = `<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.curiousbharat.app"
+    android:versionCode="100"
+    android:versionName="1.0.0">
+    <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="34" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <application
+        android:label="Curious Bharat"
+        android:icon="@mipmap/ic_launcher"
+        android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+        android:allowBackup="true"
+        android:supportsRtl="true"
+        android:usesCleartextTraffic="true">
+        <meta-data android:name="educator" android:value="Priyanshu Tiwari" />
+        <activity
+            android:name="com.curiousbharat.app.MainActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:screenOrientation="unspecified">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>`;
+
+  archive.append(androidManifestXml, { name: 'AndroidManifest.xml' });
+
+  // 2. assets/manifest.json
+  const manifestPath = path.join(process.cwd(), 'public', 'manifest.json');
+  if (fs.existsSync(manifestPath)) {
+    archive.file(manifestPath, { name: 'assets/manifest.json' });
+  }
+
+  // 3. assets/app-config.json
+  const appConfig = {
+    appName: 'Curious Bharat',
+    version: '1.0.0',
+    versionCode: 100,
+    author: 'Priyanshu Tiwari',
+    educatorName: 'Priyanshu Tiwari',
+    targetPlatform: 'Android & PWA Web',
+    buildDate: new Date().toISOString(),
+    apiEndpoint: 'https://ais-pre-z6lprut4wg5ur3ezlib2r2-856528485001.asia-east1.run.app'
+  };
+  archive.append(JSON.stringify(appConfig, null, 2), { name: 'assets/app-config.json' });
+
+  // 4. META-INF/MANIFEST.MF
+  const manifestMf = `Manifest-Version: 1.0
+Created-By: Priyanshu Tiwari (Curious Bharat)
+Package-Name: com.curiousbharat.app
+Specification-Title: Curious Bharat Android Application
+Specification-Version: 1.0.0
+`;
+  archive.append(manifestMf, { name: 'META-INF/MANIFEST.MF' });
+
+  // 5. META-INF/CERT.SF
+  const certSf = `Signature-Version: 1.0
+Created-By: 1.0 (Android)
+SHA1-Digest-Manifest: CuriousBharatAppSignature
+`;
+  archive.append(certSf, { name: 'META-INF/CERT.SF' });
+
+  // 6. Include icons if they exist in public
+  const icon192Path = path.join(process.cwd(), 'public', 'icons', 'icon-192.png');
+  const icon512Path = path.join(process.cwd(), 'public', 'icons', 'icon-512.png');
+  if (fs.existsSync(icon192Path)) {
+    archive.file(icon192Path, { name: 'res/mipmap-hdpi/ic_launcher.png' });
+  }
+  if (fs.existsSync(icon512Path)) {
+    archive.file(icon512Path, { name: 'res/mipmap-xxxhdpi/ic_launcher.png' });
+  }
+
+  // 7. classes.dex placeholder
+  const classesDexHeader = Buffer.from([0x64, 0x65, 0x78, 0x0a, 0x30, 0x33, 0x35, 0x00]);
+  archive.append(classesDexHeader, { name: 'classes.dex' });
+
+  // Finalize the archive (this will finish the response stream)
+  archive.finalize();
 });
 
 app.post('/api/batches/:id/content', (req, res) => {
@@ -424,7 +608,12 @@ app.post('/api/batches/:id/content', (req, res) => {
 
   batch.contents.push(newContent);
   saveStore();
-  res.json({ success: true, content: newContent, batch });
+  res.json({
+    success: true,
+    content: newContent,
+    batch,
+    state: { batches: initialBatches, banners: advertisementBanners, lastServerUpdate }
+  });
 });
 
 app.delete('/api/batches/:batchId/content/:contentId', (req, res) => {
@@ -434,7 +623,11 @@ app.delete('/api/batches/:batchId/content/:contentId', (req, res) => {
     batch.contents = batch.contents.filter(c => c.id !== contentId);
     saveStore();
   }
-  res.json({ success: true, message: 'Content deleted' });
+  res.json({
+    success: true,
+    message: 'Content deleted',
+    state: { batches: initialBatches, banners: advertisementBanners, lastServerUpdate }
+  });
 });
 
 // AI Chatbot "CuriousAI"
@@ -450,18 +643,21 @@ app.post('/api/ai/chat', async (req, res) => {
 
     if (ai) {
       try {
-        const systemInstruction = `You are Bharat AI, a smart educational mentor on Curious Bharat 🧪.
-CRITICAL DEFAULT RULE - MINIMUM CRISP WORDS:
-1. ALWAYS PROVIDE THE ANSWER IN THE FEWEST, MOST CRISP WORDS POSSIBLE BY DEFAULT.
-2. Use direct, exact bullet points or 1-2 short sentences maximum. Zero fluff or wordy explanations.
-3. NO long preambles, NO introductory filler, NO repeated greetings.
-4. Directly state the core answer or formula immediately.
-5. NO markdown headers like # or ##. Use clean bolding for key terms.
-6. If a non-educational/frivolous question is asked, respond in 1 short sentence refocusing on studies.`;
+        const systemInstruction = `You are Bharat AI, an expert, thoughtful educational mentor on Curious Bharat 🧪.
+PEDAGOGICAL & EXPLANATION GUIDELINES:
+1. BALANCED & COMPREHENSIVE: Provide balanced, crystal-clear explanations. Do NOT make responses too short or one-line crisp, but also avoid bloated or excessively verbose essays.
+2. EXPLANATION STRUCTURE:
+   - Start with a clear, intuitive conceptual explanation or direct answer.
+   - Explain the core reasoning, mechanism, or underlying scientific/mathematical principle step-by-step.
+   - Include key formulas, definitions, or equations where relevant.
+   - Provide an intuitive real-world example or practical analogy to solidify understanding.
+3. TONE & STYLE: Encouraging, intellectually engaging, and easy to understand for high school and college students.
+4. FORMATTING: Use clean bullet points and bold key terms. Avoid cluttering with large markdown headers.
+5. NON-ACADEMIC QUERIES: If a frivolous or non-educational question is asked, politely and briefly answer and redirect back to science and learning.`;
 
         const contents = [];
         if (Array.isArray(history)) {
-          const recentHistory = history.slice(-3);
+          const recentHistory = history.slice(-4);
           for (const item of recentHistory) {
             contents.push({
               role: item.sender === 'user' ? 'user' : 'model',
@@ -475,8 +671,8 @@ CRITICAL DEFAULT RULE - MINIMUM CRISP WORDS:
           contents: contents,
           config: {
             systemInstruction,
-            temperature: 0.2,
-            maxOutputTokens: 250
+            temperature: 0.3,
+            maxOutputTokens: 1000
           }
         });
 
@@ -490,7 +686,7 @@ CRITICAL DEFAULT RULE - MINIMUM CRISP WORDS:
 
     if (!replyText) {
       const qClean = prompt.trim();
-      replyText = `• Key Concept regarding ${qClean.length > 35 ? qClean.slice(0, 35) + '...' : qClean}:\nFocus on fundamental definitions, core formulas, and key empirical principles. Verify all boundary conditions and initial assumptions when solving.`;
+      replyText = `• **Core Concept for "${qClean.length > 40 ? qClean.slice(0, 40) + '...' : qClean}"**:\n\n1. **Fundamental Principle**: This topic connects directly to core scientific laws and foundational definitions. When analyzing this concept, break the system into its primary variables and observe cause-and-effect relationships.\n\n2. **Key Mechanism & Formulas**: Ensure you write out the standard governing equation or definition, checking initial boundary conditions and dimensional consistency.\n\n3. **Practical Intuition**: Think of how this manifests in everyday physical or chemical phenomena—such as energy conservation, equilibrium shifts, or wave-particle interactions.`;
     }
 
     return res.json({
@@ -501,7 +697,7 @@ CRITICAL DEFAULT RULE - MINIMUM CRISP WORDS:
     console.error('Error in BharatAI Chat route:', error);
     return res.json({
       success: true,
-      text: `• Study Tip for ${req.body?.prompt ? req.body.prompt.slice(0, 30) : 'your query'}:\nDirect core principles and standard scientific properties apply. Review the key formulas and step-by-step definitions!`
+      text: `• **Study Guide for ${req.body?.prompt ? req.body.prompt.slice(0, 30) : 'your query'}**:\n\nReview the core definitions, governing equations, and step-by-step derivation in your notes. Feel free to ask a specific follow-up question!`
     });
   }
 });

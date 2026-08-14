@@ -1,0 +1,98 @@
+// Manifest configuration for Curious Bharat PWA Platform
+// Authored & Developed by Priyanshu Tiwari
+
+export const manifestConfig = {
+  id: "curious-bharat-pwa-app-v1",
+  name: "Curious Bharat - EdTech Platform",
+  short_name: "Curious Bharat",
+  description: "Curiosity & Science-Driven EdTech Platform by Priyanshu Tiwari. Immersive concept lectures, study materials, and AI practice generator.",
+  author: "Priyanshu Tiwari",
+  developer: {
+    name: "Priyanshu Tiwari",
+    url: "https://curiousbharat.in"
+  },
+  start_url: "/",
+  scope: "/",
+  display: "standalone",
+  display_override: ["standalone", "window-controls-overlay", "minimal-ui", "browser"],
+  background_color: "#FAF6F0",
+  theme_color: "#B85B14",
+  orientation: "any",
+  lang: "en-IN",
+  dir: "ltr",
+  categories: ["education", "reference", "books", "productivity"],
+  prefer_related_applications: false,
+  icons: [
+    {
+      src: "/icons/icon-192.png",
+      sizes: "192x192",
+      type: "image/png",
+      purpose: "any"
+    },
+    {
+      src: "/icons/icon-192.png",
+      sizes: "192x192",
+      type: "image/png",
+      purpose: "maskable"
+    },
+    {
+      src: "/icons/icon-512.png",
+      sizes: "512x512",
+      type: "image/png",
+      purpose: "any"
+    },
+    {
+      src: "/icons/icon-512.png",
+      sizes: "512x512",
+      type: "image/png",
+      purpose: "maskable"
+    },
+    {
+      src: "/icons/icon.svg",
+      sizes: "any",
+      type: "image/svg+xml",
+      purpose: "any"
+    }
+  ],
+  shortcuts: [
+    {
+      name: "Concept & Study Batches",
+      short_name: "Batches",
+      description: "Explore curated batches and lectures by Priyanshu Tiwari",
+      url: "/?tab=study",
+      icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }]
+    },
+    {
+      name: "AI Practice Generator",
+      short_name: "Practice",
+      description: "Generate instant academic practice quizzes",
+      url: "/?tab=practice",
+      icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }]
+    },
+    {
+      name: "Bharat AI Academic Mentor",
+      short_name: "Bharat AI",
+      description: "Ask physics, chemistry, and maths questions to Bharat AI",
+      url: "/?tab=ai",
+      icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }]
+    },
+    {
+      name: "Study Analytics & Progress",
+      short_name: "Analysis",
+      description: "View your personal study time and test scores",
+      url: "/?tab=analysis",
+      icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }]
+    }
+  ],
+  share_target: {
+    action: "/?tab=ai",
+    method: "GET",
+    params: {
+      title: "title",
+      text: "text",
+      url: "url"
+    }
+  }
+};
+
+export default manifestConfig;

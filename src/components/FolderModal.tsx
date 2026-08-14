@@ -19,10 +19,29 @@ interface CommentItem {
 }
 
 export const FolderModal: React.FC<FolderModalProps> = ({ batch, onClose, onRefreshBatchData }) => {
-  const [activeSubTab, setActiveSubTab] = useState<'videos' | 'pdfs' | 'study_material' | 'tests'>('videos');
+  const subTabsConfig = [
+    { id: 'videos' as const, label: 'Concept', icon: Video, visible: batch.showConceptTab !== false },
+    { id: 'study_material' as const, label: 'Study Material', icon: BookOpen, visible: batch.showStudyMaterialTab !== false },
+    { id: 'tests' as const, label: 'Practice', icon: FileCheck, visible: batch.showPracticeTab !== false },
+  ];
+
+  const availableSubTabs = subTabsConfig.filter((t) => t.visible);
+  const defaultTab = availableSubTabs[0]?.id || 'videos';
+
+  const [activeSubTab, setActiveSubTab] = useState<'videos' | 'study_material' | 'tests'>(defaultTab);
   const [selectedVideo, setSelectedVideo] = useState<ContentItem | null>(null);
   const [selectedPdf, setSelectedPdf] = useState<ContentItem | null>(null);
   const [activeTest, setActiveTest] = useState<ContentItem | null>(null);
+
+  // Sync active tab if educator disables the currently selected tab
+  React.useEffect(() => {
+    if (availableSubTabs.length > 0 && !availableSubTabs.some((t) => t.id === activeSubTab)) {
+      setActiveSubTab(availableSubTabs[0].id);
+      setSelectedVideo(null);
+      setSelectedPdf(null);
+      setActiveTest(null);
+    }
+  }, [batch.showConceptTab, batch.showStudyMaterialTab, batch.showPracticeTab]);
 
   // Video player user action state (starts at 0, strictly user driven)
   const [likesCount, setLikesCount] = useState(0);
@@ -39,8 +58,13 @@ export const FolderModal: React.FC<FolderModalProps> = ({ batch, onClose, onRefr
   const [testSubmitted, setTestSubmitted] = useState(false);
   const [testScore, setTestScore] = useState<number | null>(null);
 
-  const filterContents = (category: 'videos' | 'pdfs' | 'study_material' | 'tests') => {
-    return batch.contents.filter(c => c.folderCategory === category || (category === 'videos' && c.type === 'video') || (category === 'pdfs' && c.type === 'pdf') || (category === 'tests' && c.type === 'test') || (category === 'study_material' && c.type === 'dpp'));
+  const filterContents = (category: 'videos' | 'study_material' | 'tests') => {
+    return batch.contents.filter(c => 
+      c.folderCategory === category || 
+      (category === 'videos' && c.type === 'video') || 
+      (category === 'study_material' && (c.type === 'dpp' || c.type === 'pdf' || c.folderCategory === 'pdfs')) || 
+      (category === 'tests' && c.type === 'test')
+    );
   };
 
   const handleWatchLecture = (item: ContentItem) => {
@@ -233,34 +257,35 @@ export const FolderModal: React.FC<FolderModalProps> = ({ batch, onClose, onRefr
           </button>
 
           <div className="flex items-center space-x-1.5 overflow-x-auto scrollbar-none mx-2">
-            {[
-              { id: 'videos', label: 'Videos', icon: Video },
-              { id: 'pdfs', label: 'PDF Notes', icon: FileText },
-              { id: 'study_material', label: 'Study Material', icon: BookOpen },
-              { id: 'tests', label: 'Tests', icon: FileCheck },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeSubTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setActiveSubTab(tab.id as any);
-                    setSelectedVideo(null);
-                    setSelectedPdf(null);
-                    setActiveTest(null);
-                  }}
-                  className={`flex items-center space-x-1 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                    isActive
-                      ? 'bg-[#B85B14] text-white shadow-xs'
-                      : 'text-[#7A6B63] hover:text-[#382820] hover:bg-[#FAF6F0]'
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
+            {availableSubTabs.length === 0 ? (
+              <span className="text-xs text-[#7A6B63] font-semibold px-2 py-1 bg-[#FAF6F0] rounded-lg">
+                Sections disabled
+              </span>
+            ) : (
+              availableSubTabs.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeSubTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setActiveSubTab(tab.id as any);
+                      setSelectedVideo(null);
+                      setSelectedPdf(null);
+                      setActiveTest(null);
+                    }}
+                    className={`flex items-center space-x-1 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                      isActive
+                        ? 'bg-[#B85B14] text-white shadow-xs'
+                        : 'text-[#7A6B63] hover:text-[#382820] hover:bg-[#FAF6F0]'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })
+            )}
           </div>
 
           <button
@@ -476,13 +501,13 @@ export const FolderModal: React.FC<FolderModalProps> = ({ batch, onClose, onRefr
               <div className="flex items-center justify-between border-b border-[#F3E8DB] pb-2">
                 <div>
                   <h4 className="text-xs font-black text-[#382820]">{activeTest.title}</h4>
-                  <p className="text-[10px] text-[#7A6B63] font-medium">{activeTest.questions?.length || 0} Questions • Timed Test</p>
+                  <p className="text-[10px] text-[#7A6B63] font-medium">{activeTest.questions?.length || 0} Questions • Practice Session</p>
                 </div>
                 <button
                   onClick={() => setActiveTest(null)}
                   className="text-[10px] px-2.5 py-1 bg-[#FAF6F0] hover:bg-[#F3E8DB] text-[#382820] font-bold rounded-md border border-[#E6DCCF]"
                 >
-                  Exit Test
+                  Exit Practice
                 </button>
               </div>
 
@@ -518,7 +543,7 @@ export const FolderModal: React.FC<FolderModalProps> = ({ batch, onClose, onRefr
                     onClick={handleSubmitTest}
                     className="w-full py-3 bg-[#B85B14] hover:bg-[#A04812] text-white font-bold rounded-xl text-xs shadow-xs transition-all active:scale-98"
                   >
-                    Submit Test & Evaluate Score
+                    Submit Practice & Evaluate Score
                   </button>
                 </div>
               ) : (
@@ -526,7 +551,7 @@ export const FolderModal: React.FC<FolderModalProps> = ({ batch, onClose, onRefr
                   <div className="w-12 h-12 mx-auto rounded-full bg-[#EAF0E6] text-[#4D6B40] flex items-center justify-center font-black text-lg border border-[#C6D8C0] shadow-xs">
                     {testScore} / {activeTest.questions?.length}
                   </div>
-                  <h4 className="text-sm font-extrabold text-[#382820]">Test Completed!</h4>
+                  <h4 className="text-sm font-extrabold text-[#382820]">Practice Completed!</h4>
                   <p className="text-xs text-[#7A6B63] font-medium">Your score has been logged to the Analysis tab.</p>
                   
                   {/* Detailed Solutions */}
@@ -556,7 +581,9 @@ export const FolderModal: React.FC<FolderModalProps> = ({ batch, onClose, onRefr
           {filterContents(activeSubTab).length === 0 ? (
             <div className="p-8 text-center bg-white rounded-2xl border border-[#E6DCCF] shadow-xs">
               <BookOpen className="w-8 h-8 text-[#7A6B63] mx-auto mb-2" />
-              <p className="text-xs font-bold text-[#382820]">No {activeSubTab} uploaded in this batch yet.</p>
+              <p className="text-xs font-bold text-[#382820]">
+                No {activeSubTab === 'videos' ? 'concept lectures' : activeSubTab === 'study_material' ? 'study materials' : 'practice items'} uploaded in this batch yet.
+              </p>
               <p className="text-[10px] text-[#7A6B63] mt-1 font-medium">Educators can add fresh content via the Admin Portal.</p>
             </div>
           ) : (
@@ -569,7 +596,7 @@ export const FolderModal: React.FC<FolderModalProps> = ({ batch, onClose, onRefr
                   <div className="space-y-1 pr-2">
                     <div className="flex items-center space-x-2">
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#F3E8DB] text-[#8C4A1B] border border-[#E2CEB9] uppercase">
-                        {item.type}
+                        {item.type === 'video' ? 'Concept' : item.type === 'test' ? 'Practice' : item.type}
                       </span>
                       {item.duration && (
                         <span className="text-[10px] text-[#7A6B63] font-medium flex items-center gap-1">
@@ -590,7 +617,7 @@ export const FolderModal: React.FC<FolderModalProps> = ({ batch, onClose, onRefr
                         className="px-3.5 py-2 bg-[#B85B14] hover:bg-[#A04812] text-white rounded-xl text-xs font-bold flex items-center space-x-1 shadow-xs active:scale-95 transition-all"
                       >
                         <Play className="w-3.5 h-3.5 fill-current" />
-                        <span>Play Video</span>
+                        <span>Watch Concept</span>
                       </button>
                     )}
 
@@ -600,7 +627,7 @@ export const FolderModal: React.FC<FolderModalProps> = ({ batch, onClose, onRefr
                         className="px-3.5 py-2 bg-[#4D6B40] hover:bg-[#3E5733] text-white rounded-xl text-xs font-bold flex items-center space-x-1 shadow-xs active:scale-95 transition-all"
                       >
                         <FileText className="w-3.5 h-3.5" />
-                        <span>View</span>
+                        <span>View Document</span>
                       </button>
                     )}
 
@@ -622,7 +649,7 @@ export const FolderModal: React.FC<FolderModalProps> = ({ batch, onClose, onRefr
                         className="px-3.5 py-2 bg-[#B85B14] hover:bg-[#A04812] text-white rounded-xl text-xs font-bold flex items-center space-x-1 shadow-xs active:scale-95 transition-all"
                       >
                         <FileCheck className="w-3.5 h-3.5" />
-                        <span>Start Test</span>
+                        <span>Start Practice</span>
                       </button>
                     )}
                   </div>

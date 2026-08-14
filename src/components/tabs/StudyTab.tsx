@@ -71,9 +71,11 @@ export const StudyTab: React.FC<StudyTabProps> = ({
                       {batch.title}
                     </h3>
                   </div>
-                  <p className="text-[11px] text-[#7A6B63] font-semibold mt-0.5">
-                    {batch.subtitle || batch.category}
-                  </p>
+                  {batch.subtitle && (
+                    <p className="text-[11px] text-[#7A6B63] font-semibold mt-0.5">
+                      {batch.subtitle}
+                    </p>
+                  )}
                 </div>
                 <span className="shrink-0 text-[10px] font-black px-2 py-0.5 rounded-lg bg-[#FAF0E6] text-[#B85B14] border border-[#EAC8A9] uppercase tracking-wider">
                   New
@@ -117,7 +119,7 @@ export const StudyTab: React.FC<StudyTabProps> = ({
                         Hinglish / English
                       </span>
                       <span className="text-[9px] font-bold text-white/90">
-                        {batch.educatorName || 'Curious Bharat Lab'}
+                        {batch.educatorName || 'Priyanshu Tiwari'}
                       </span>
                     </div>
                     {/* Bottom Features Strip */}

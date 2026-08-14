@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Batch, ContentItem } from '../types';
-import { loginEducator, createBatch, updateBatch, addBatchContent, deleteBatch, formatQuizFromRawText, generateQuizFromRandomText } from '../lib/api';
-import { X, ShieldCheck, Plus, Trash2, Video, FileText, BookOpen, FileCheck, LogOut, CheckCircle2, RefreshCw, Image, Edit3, Settings, Sparkles, Wand2, HelpCircle, FileQuestion, Check, AlertCircle } from 'lucide-react';
+import { loginEducator, createBatch, updateBatch, addBatchContent, deleteBatch, toggleBatchSubTab, formatQuizFromRawText, generateQuizFromRandomText } from '../lib/api';
+import { X, ShieldCheck, Plus, Trash2, Video, FileText, BookOpen, FileCheck, LogOut, CheckCircle2, RefreshCw, Image, Edit3, Settings, Sparkles, Wand2, HelpCircle, FileQuestion, Check, AlertCircle, Eye, EyeOff, Layers } from 'lucide-react';
 
 interface EducatorPortalModalProps {
   batches: Batch[];
@@ -32,6 +32,10 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
 
   // New Batch Form
   const [newBatchTitle, setNewBatchTitle] = useState('');
+  const [newBatchSubtitle, setNewBatchSubtitle] = useState('');
+  const [newBatchShowConceptTab, setNewBatchShowConceptTab] = useState(true);
+  const [newBatchShowStudyMaterialTab, setNewBatchShowStudyMaterialTab] = useState(true);
+  const [newBatchShowPracticeTab, setNewBatchShowPracticeTab] = useState(true);
   const [newBatchCategory, setNewBatchCategory] = useState('Physics & Cosmos');
   const [newBatchDesc, setNewBatchDesc] = useState('');
   const [newBatchIsPaid, setNewBatchIsPaid] = useState(false);
@@ -42,6 +46,10 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
   // Edit/Customize Batch Form
   const [editBatchId, setEditBatchId] = useState<string>(batches[0]?.id || '');
   const [editTitle, setEditTitle] = useState('');
+  const [editSubtitle, setEditSubtitle] = useState('');
+  const [editShowConceptTab, setEditShowConceptTab] = useState(true);
+  const [editShowStudyMaterialTab, setEditShowStudyMaterialTab] = useState(true);
+  const [editShowPracticeTab, setEditShowPracticeTab] = useState(true);
   const [editCategory, setEditCategory] = useState('Physics & Cosmos');
   const [editDesc, setEditDesc] = useState('');
   const [editIsPaid, setEditIsPaid] = useState(true);
@@ -49,6 +57,9 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
   const [editThumbnail, setEditThumbnail] = useState('');
   const [editHeroImage, setEditHeroImage] = useState('');
   const [isSavingEdit, setIsSavingEdit] = useState(false);
+
+  // Subtab Toggle State
+  const [togglingSubTabKey, setTogglingSubTabKey] = useState<string | null>(null);
 
   // New Content Form
   const [contentCategory, setContentCategory] = useState<string>('videos');
@@ -209,6 +220,10 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
     if (target) {
       setEditBatchId(target.id);
       setEditTitle(target.title);
+      setEditSubtitle(target.subtitle || '');
+      setEditShowConceptTab(target.showConceptTab !== false);
+      setEditShowStudyMaterialTab(target.showStudyMaterialTab !== false);
+      setEditShowPracticeTab(target.showPracticeTab !== false);
       setEditCategory(target.category);
       setEditDesc(target.description);
       setEditIsPaid(target.isPaid);
@@ -218,23 +233,44 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
     }
   };
 
+  const handleToggleBatchSubTab = async (
+    batchId: string,
+    subTab: 'concept' | 'study_material' | 'practice',
+    currentVal: boolean = true
+  ) => {
+    const key = `${batchId}-${subTab}`;
+    setTogglingSubTabKey(key);
+    try {
+      await toggleBatchSubTab(batchId, subTab, !currentVal);
+      onRefreshData();
+    } catch (err) {
+      console.error('Failed to toggle subtab:', err);
+    } finally {
+      setTogglingSubTabKey(null);
+    }
+  };
+
   const handleCreateBatch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newBatchTitle || !newBatchDesc) return;
 
     await createBatch({
       title: newBatchTitle,
-      subtitle: `${newBatchCategory} Special`,
+      subtitle: newBatchSubtitle || `${newBatchCategory} Special`,
+      showConceptTab: newBatchShowConceptTab,
+      showStudyMaterialTab: newBatchShowStudyMaterialTab,
+      showPracticeTab: newBatchShowPracticeTab,
       description: newBatchDesc,
       category: newBatchCategory,
       isPaid: newBatchIsPaid,
       price: newBatchIsPaid ? Number(newBatchPrice) : 0,
       thumbnailUrl: newBatchThumbnail,
       heroImageUrl: newBatchHeroImage,
-      educatorName: 'Curious Bharat Master Educator',
+      educatorName: 'Priyanshu Tiwari',
     });
 
     setNewBatchTitle('');
+    setNewBatchSubtitle('');
     setNewBatchDesc('');
     onRefreshData();
     setActiveTab('batches');
@@ -248,6 +284,10 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
     try {
       await updateBatch(editBatchId, {
         title: editTitle,
+        subtitle: editSubtitle,
+        showConceptTab: editShowConceptTab,
+        showStudyMaterialTab: editShowStudyMaterialTab,
+        showPracticeTab: editShowPracticeTab,
         category: editCategory,
         description: editDesc,
         isPaid: editIsPaid,
@@ -450,10 +490,17 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
                         </div>
 
                         <div className="flex-1 min-w-0">
-                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#F3E8DB] text-[#B85B14] border border-[#E2CEB9]">
-                            {b.category}
-                          </span>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#F3E8DB] text-[#8C4A1B] border border-[#E2CEB9]">
+                              {b.category}
+                            </span>
+                          </div>
                           <h5 className="text-xs font-bold text-[#382820] mt-1 truncate">{b.title}</h5>
+                          {b.subtitle && (
+                            <p className="text-[10px] text-[#7A6B63] font-medium truncate">
+                              Sub: {b.subtitle}
+                            </p>
+                          )}
                           <p className="text-[10px] text-[#7A6B63] font-medium">
                             {b.isPaid ? `Price: ₹${b.price}` : '100% FREE'} • {b.contents?.length || 0} Contents
                           </p>
@@ -476,6 +523,64 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
                             title="Delete Batch"
                           >
                             <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Subtab Visibility Controls (Concept, Study Material, Practice) */}
+                      <div className="pt-2 border-t border-[#F3E8DB] space-y-1.5">
+                        <div className="flex items-center justify-between text-[10px]">
+                          <span className="font-bold text-[#382820] flex items-center gap-1">
+                            <Layers className="w-3 h-3 text-[#B85B14]" /> Subtabs Visible to Students:
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-1.5">
+                          {/* Concept Subtab */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleBatchSubTab(b.id, 'concept', b.showConceptTab !== false)}
+                            disabled={togglingSubTabKey === `${b.id}-concept`}
+                            className={`py-1 px-1.5 rounded-lg text-[10px] font-bold border transition-all cursor-pointer flex items-center justify-center gap-1 active:scale-95 ${
+                              b.showConceptTab !== false
+                                ? 'bg-[#EEF4EC] text-[#4D6B40] border-[#D5E3D1]'
+                                : 'bg-[#F5EFEB] text-[#7A6B63] border-[#E6DCCF] opacity-75'
+                            }`}
+                            title="Toggle Concept subtab visibility"
+                          >
+                            <Video className="w-2.5 h-2.5" />
+                            <span>Concept: {b.showConceptTab !== false ? 'ON' : 'OFF'}</span>
+                          </button>
+
+                          {/* Study Material Subtab */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleBatchSubTab(b.id, 'study_material', b.showStudyMaterialTab !== false)}
+                            disabled={togglingSubTabKey === `${b.id}-study_material`}
+                            className={`py-1 px-1.5 rounded-lg text-[10px] font-bold border transition-all cursor-pointer flex items-center justify-center gap-1 active:scale-95 ${
+                              b.showStudyMaterialTab !== false
+                                ? 'bg-[#EEF4EC] text-[#4D6B40] border-[#D5E3D1]'
+                                : 'bg-[#F5EFEB] text-[#7A6B63] border-[#E6DCCF] opacity-75'
+                            }`}
+                            title="Toggle Study Material subtab visibility"
+                          >
+                            <BookOpen className="w-2.5 h-2.5" />
+                            <span>Study Mat: {b.showStudyMaterialTab !== false ? 'ON' : 'OFF'}</span>
+                          </button>
+
+                          {/* Practice Subtab */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleBatchSubTab(b.id, 'practice', b.showPracticeTab !== false)}
+                            disabled={togglingSubTabKey === `${b.id}-practice`}
+                            className={`py-1 px-1.5 rounded-lg text-[10px] font-bold border transition-all cursor-pointer flex items-center justify-center gap-1 active:scale-95 ${
+                              b.showPracticeTab !== false
+                                ? 'bg-[#EEF4EC] text-[#4D6B40] border-[#D5E3D1]'
+                                : 'bg-[#F5EFEB] text-[#7A6B63] border-[#E6DCCF] opacity-75'
+                            }`}
+                            title="Toggle Practice subtab visibility"
+                          >
+                            <FileCheck className="w-2.5 h-2.5" />
+                            <span>Practice: {b.showPracticeTab !== false ? 'ON' : 'OFF'}</span>
                           </button>
                         </div>
                       </div>
@@ -536,6 +641,66 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
                       className="w-full bg-[#FAF6F0] border border-[#E6DCCF] rounded-xl px-3 py-2 text-[#382820] placeholder-[#A0938A] focus:outline-none focus:border-[#B85B14] font-medium"
                       required
                     />
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold text-[#382820] block mb-1">Batch Subtitle</label>
+                    <input
+                      type="text"
+                      value={newBatchSubtitle}
+                      onChange={(e) => setNewBatchSubtitle(e.target.value)}
+                      placeholder="e.g. Complete Theoretical & Numerical Mastery"
+                      className="w-full bg-[#FAF6F0] border border-[#E6DCCF] rounded-xl px-3 py-2 text-[#382820] placeholder-[#A0938A] focus:outline-none focus:border-[#B85B14] font-medium"
+                    />
+                  </div>
+
+                  {/* Student Subtabs Visibility On/Off */}
+                  <div className="p-3 bg-[#FAF0E6] rounded-xl border border-[#EAC8A9] space-y-2">
+                    <div>
+                      <span className="text-[11px] font-black text-[#382820] block">Student Subtabs Initial Visibility</span>
+                      <span className="text-[10px] text-[#7A6B63]">Choose which subtabs are visible to students</span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-1.5 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setNewBatchShowConceptTab(!newBatchShowConceptTab)}
+                        className={`py-1.5 px-2 rounded-lg text-xs font-bold border flex items-center justify-between cursor-pointer ${
+                          newBatchShowConceptTab
+                            ? 'bg-[#EEF4EC] text-[#4D6B40] border-[#D5E3D1]'
+                            : 'bg-[#F5EFEB] text-[#7A6B63] border-[#E6DCCF]'
+                        }`}
+                      >
+                        <span className="flex items-center gap-1"><Video className="w-3 h-3" /> Concept</span>
+                        <span className="text-[10px]">{newBatchShowConceptTab ? 'ON' : 'OFF'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setNewBatchShowStudyMaterialTab(!newBatchShowStudyMaterialTab)}
+                        className={`py-1.5 px-2 rounded-lg text-xs font-bold border flex items-center justify-between cursor-pointer ${
+                          newBatchShowStudyMaterialTab
+                            ? 'bg-[#EEF4EC] text-[#4D6B40] border-[#D5E3D1]'
+                            : 'bg-[#F5EFEB] text-[#7A6B63] border-[#E6DCCF]'
+                        }`}
+                      >
+                        <span className="flex items-center gap-1"><BookOpen className="w-3 h-3" /> Study Mat</span>
+                        <span className="text-[10px]">{newBatchShowStudyMaterialTab ? 'ON' : 'OFF'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setNewBatchShowPracticeTab(!newBatchShowPracticeTab)}
+                        className={`py-1.5 px-2 rounded-lg text-xs font-bold border flex items-center justify-between cursor-pointer ${
+                          newBatchShowPracticeTab
+                            ? 'bg-[#EEF4EC] text-[#4D6B40] border-[#D5E3D1]'
+                            : 'bg-[#F5EFEB] text-[#7A6B63] border-[#E6DCCF]'
+                        }`}
+                      >
+                        <span className="flex items-center gap-1"><FileCheck className="w-3 h-3" /> Practice</span>
+                        <span className="text-[10px]">{newBatchShowPracticeTab ? 'ON' : 'OFF'}</span>
+                      </button>
+                    </div>
                   </div>
 
                   <div>
@@ -700,6 +865,84 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
                     />
                   </div>
 
+                  <div>
+                    <label className="text-[11px] font-bold text-[#382820] block mb-1">Batch Subtitle</label>
+                    <input
+                      type="text"
+                      value={editSubtitle}
+                      onChange={(e) => setEditSubtitle(e.target.value)}
+                      placeholder="e.g. Complete Theoretical & Numerical Mastery"
+                      className="w-full bg-[#FAF6F0] border border-[#E6DCCF] rounded-xl px-3 py-2 text-[#382820] font-medium text-xs"
+                    />
+                  </div>
+
+                  {/* Subtabs Visibility Settings for this Batch */}
+                  <div className="p-3 bg-[#FAF0E6] rounded-xl border border-[#EAC8A9] space-y-2">
+                    <div>
+                      <span className="text-[11px] font-black text-[#382820] block">Student Subtabs Visibility (On / Off)</span>
+                      <span className="text-[10px] text-[#7A6B63]">Enable or hide Concept, Study Material, and Practice subtabs for students</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                      {/* Concept Subtab */}
+                      <button
+                        type="button"
+                        onClick={() => setEditShowConceptTab(!editShowConceptTab)}
+                        className={`p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-between border active:scale-98 ${
+                          editShowConceptTab
+                            ? 'bg-[#EEF4EC] text-[#4D6B40] border-[#D5E3D1]'
+                            : 'bg-[#F5EFEB] text-[#7A6B63] border-[#E6DCCF]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <Video className="w-3.5 h-3.5" />
+                          <span>Concept</span>
+                        </div>
+                        <span className={`px-2 py-0.5 rounded text-[10px] ${editShowConceptTab ? 'bg-[#4D6B40] text-white' : 'bg-[#7A6B63] text-white'}`}>
+                          {editShowConceptTab ? 'ON' : 'OFF'}
+                        </span>
+                      </button>
+
+                      {/* Study Material Subtab */}
+                      <button
+                        type="button"
+                        onClick={() => setEditShowStudyMaterialTab(!editShowStudyMaterialTab)}
+                        className={`p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-between border active:scale-98 ${
+                          editShowStudyMaterialTab
+                            ? 'bg-[#EEF4EC] text-[#4D6B40] border-[#D5E3D1]'
+                            : 'bg-[#F5EFEB] text-[#7A6B63] border-[#E6DCCF]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <BookOpen className="w-3.5 h-3.5" />
+                          <span>Study Material</span>
+                        </div>
+                        <span className={`px-2 py-0.5 rounded text-[10px] ${editShowStudyMaterialTab ? 'bg-[#4D6B40] text-white' : 'bg-[#7A6B63] text-white'}`}>
+                          {editShowStudyMaterialTab ? 'ON' : 'OFF'}
+                        </span>
+                      </button>
+
+                      {/* Practice Subtab */}
+                      <button
+                        type="button"
+                        onClick={() => setEditShowPracticeTab(!editShowPracticeTab)}
+                        className={`p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-between border active:scale-98 ${
+                          editShowPracticeTab
+                            ? 'bg-[#EEF4EC] text-[#4D6B40] border-[#D5E3D1]'
+                            : 'bg-[#F5EFEB] text-[#7A6B63] border-[#E6DCCF]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <FileCheck className="w-3.5 h-3.5" />
+                          <span>Practice</span>
+                        </div>
+                        <span className={`px-2 py-0.5 rounded text-[10px] ${editShowPracticeTab ? 'bg-[#4D6B40] text-white' : 'bg-[#7A6B63] text-white'}`}>
+                          {editShowPracticeTab ? 'ON' : 'OFF'}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+
                   {/* Thumbnail URL Customization */}
                   <div className="space-y-2 p-3 bg-[#F5EFEB] rounded-xl border border-[#E6DCCF]">
                     <label className="text-[11px] font-bold text-[#382820] flex items-center gap-1.5">
@@ -811,11 +1054,11 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
                         type="text"
                         value={contentCategory}
                         onChange={(e) => setContentCategory(e.target.value)}
-                        placeholder="e.g. videos, pdfs, study_material, tests..."
+                        placeholder="e.g. videos, study_material, tests..."
                         className="w-full bg-[#FAF6F0] border border-[#E6DCCF] rounded-xl px-3 py-2 text-[#382820] placeholder-[#A0938A] focus:outline-none focus:border-[#B85B14] font-medium text-xs"
                       />
                       <div className="flex gap-1 overflow-x-auto pt-1">
-                        {['videos', 'pdfs', 'study_material', 'tests'].map((cat) => (
+                        {['videos', 'study_material', 'tests'].map((cat) => (
                           <button
                             key={cat}
                             type="button"
@@ -826,7 +1069,7 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
                                 : 'bg-[#F5EFEB] text-[#7A6B63] border-[#E6DCCF] hover:bg-[#E2CEB9]/50'
                             }`}
                           >
-                            {cat}
+                            {cat === 'videos' ? 'Concept (Videos)' : cat === 'study_material' ? 'Study Material' : 'Practice (Tests)'}
                           </button>
                         ))}
                       </div>
@@ -839,10 +1082,10 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
                         onChange={(e) => setContentType(e.target.value as any)}
                         className="w-full bg-[#FAF6F0] border border-[#E6DCCF] rounded-xl px-3 py-2 text-[#382820] font-medium"
                       >
-                        <option value="video">Video Lecture</option>
-                        <option value="pdf">PDF Document</option>
+                        <option value="video">Concept Video Lecture</option>
+                        <option value="pdf">Study Material PDF Document</option>
                         <option value="dpp">Daily Practice Problem (DPP)</option>
-                        <option value="test">Interactive Quiz Test</option>
+                        <option value="test">Practice Quiz / Test</option>
                       </select>
                     </div>
                   </div>

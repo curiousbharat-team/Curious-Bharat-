@@ -266,6 +266,19 @@ export async function deleteBatch(batchId: string) {
   return data;
 }
 
+export async function toggleBatchSubTab(batchId: string, subTab: 'concept' | 'study_material' | 'practice', visible: boolean) {
+  const res = await fetch('/api/batches/toggle-subtab', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ batchId, subTab, visible }),
+  });
+  const data = await res.json();
+  if (data && data.state) {
+    pushAppStateToFirestore(data.state).catch(() => {});
+  }
+  return data;
+}
+
 export async function sendBharatAIChat(prompt: string, history: ChatMessage[] = []) {
   const customKey = getCustomGeminiKey();
   const res = await fetch('/api/ai/chat', {
