@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Curious Bharat global app content (batches, banners, materials)
+    match /app_data/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    match /batches/{batchId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    match /banners/{bannerId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    // Per-device analytics if stored or synced
+    match /device_analytics/{deviceId} {
+      allow read, write: if true;
+    }
+    
+    // Default fallback
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
