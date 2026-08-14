@@ -202,14 +202,16 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
     setLoginError('');
     setIsLoggingIn(true);
     try {
-      const res = await loginEducator(userId, password);
-      if (res.success) {
+      const cleanUserId = userId.trim();
+      const cleanPass = password.trim();
+      const res = await loginEducator(cleanUserId, cleanPass);
+      if (res && res.success) {
         onLoginSuccess();
       } else {
-        setLoginError(res.message || 'Invalid credentials');
+        setLoginError((res && res.message) || 'Invalid User ID or Password. Please try again.');
       }
     } catch {
-      setLoginError('Server authentication failed');
+      setLoginError('Authentication failed. Please check your credentials.');
     } finally {
       setIsLoggingIn(false);
     }
