@@ -233,9 +233,6 @@ export default function App() {
         {isEducatorModalOpen && (
           <EducatorPortalModal
             batches={batches}
-            isLoggedIn={isEducatorLoggedIn}
-            onLoginSuccess={() => setIsEducatorLoggedIn(true)}
-            onLogout={() => setIsEducatorLoggedIn(false)}
             onClose={() => setIsEducatorModalOpen(false)}
             onRefreshData={loadState}
           />

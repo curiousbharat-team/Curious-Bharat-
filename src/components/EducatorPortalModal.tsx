@@ -5,27 +5,18 @@ import { X, ShieldCheck, Plus, Trash2, Video, FileText, BookOpen, FileCheck, Log
 
 interface EducatorPortalModalProps {
   batches: Batch[];
-  isLoggedIn: boolean;
-  onLoginSuccess: () => void;
-  onLogout: () => void;
+  isLoggedIn?: boolean;
+  onLoginSuccess?: () => void;
+  onLogout?: () => void;
   onClose: () => void;
   onRefreshData: () => void;
 }
 
 export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
   batches,
-  isLoggedIn,
-  onLoginSuccess,
-  onLogout,
   onClose,
   onRefreshData,
 }) => {
-  // Login form
-  const [userId, setUserId] = useState('');
-  const [password, setPassword] = useState('');
-  const [loginError, setLoginError] = useState('');
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
-
   // Admin Dashboard views
   const [activeTab, setActiveTab] = useState<'batches' | 'add_batch' | 'customize' | 'add_content'>('batches');
   const [selectedBatchId, setSelectedBatchId] = useState<string>(batches[0]?.id || '');
@@ -197,26 +188,6 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
     { label: 'Science & Lab Technology', url: 'https://images.unsplash.com/photo-1507668077129-56e32842fceb?w=1000&auto=format&fit=crop&q=80' },
   ];
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError('');
-    setIsLoggingIn(true);
-    try {
-      const cleanUserId = userId.trim();
-      const cleanPass = password.trim();
-      const res = await loginEducator(cleanUserId, cleanPass);
-      if (res && res.success) {
-        onLoginSuccess();
-      } else {
-        setLoginError((res && res.message) || 'Invalid User ID or Password. Please try again.');
-      }
-    } catch {
-      setLoginError('Authentication failed. Please check your credentials.');
-    } finally {
-      setIsLoggingIn(false);
-    }
-  };
-
   const loadBatchToEdit = (batchId: string) => {
     const target = batches.find((b) => b.id === batchId);
     if (target) {
@@ -361,92 +332,31 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            {isLoggedIn && (
-              <button
-                onClick={onLogout}
-                className="p-1.5 rounded-lg text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
-                title="Logout"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            )}
             <button onClick={onClose} className="p-1.5 text-[#7A6B63] hover:text-[#382820] rounded-lg cursor-pointer">
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* LOGIN SCREEN */}
-        {!isLoggedIn ? (
-          <div className="flex-1 p-6 flex flex-col justify-center space-y-4 max-w-md mx-auto w-full">
-            <div className="text-center space-y-1">
-              <div className="w-12 h-12 mx-auto rounded-2xl bg-[#F3E8DB] text-[#B85B14] border border-[#E2CEB9] flex items-center justify-center mb-2 shadow-xs">
-                <ShieldCheck className="w-6 h-6 text-[#B85B14]" />
-              </div>
-              <h4 className="text-base font-extrabold text-[#382820]">Educator Authentication</h4>
-              <p className="text-xs text-[#7A6B63]">Sign in to customize batch hero images, thumbnails, and materials</p>
-            </div>
-
-            <form onSubmit={handleLogin} className="space-y-3 pt-2">
-              <div>
-                <label className="text-[11px] font-bold text-[#382820] block mb-1">User ID</label>
-                <input
-                  type="text"
-                  value={userId}
-                  onChange={(e) => setUserId(e.target.value)}
-                  placeholder="Enter User ID"
-                  className="w-full bg-white border border-[#E6DCCF] rounded-xl px-3.5 py-2.5 text-xs text-[#382820] placeholder-[#A0938A] focus:outline-none focus:border-[#B85B14] font-medium"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="text-[11px] font-bold text-[#382820] block mb-1">Password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter Password"
-                  className="w-full bg-white border border-[#E6DCCF] rounded-xl px-3.5 py-2.5 text-xs text-[#382820] placeholder-[#A0938A] focus:outline-none focus:border-[#B85B14] font-medium"
-                  required
-                />
-              </div>
-
-              {loginError && (
-                <p className="text-[11px] text-rose-700 bg-rose-50 p-2 rounded-lg border border-rose-200 text-center font-medium">
-                  {loginError}
-                </p>
-              )}
-
+        {/* DIRECT ADMIN DASHBOARD */}
+        <div className="flex-1 flex flex-col overflow-hidden bg-[#FAF6F0]">
+          
+          {/* Top Admin Nav */}
+          <div className="flex border-b border-[#E6DCCF] bg-white px-3 py-2 gap-2 overflow-x-auto scrollbar-none">
+            {[
+              { id: 'batches', label: 'Manage Batches' },
+              { id: 'add_batch', label: '+ New Batch' },
+              { id: 'customize', label: '🎨 Batch Customization' },
+              { id: 'add_content', label: '+ Add Materials' },
+            ].map((t) => (
               <button
-                type="submit"
-                disabled={isLoggingIn}
-                className="w-full py-2.5 bg-[#B85B14] hover:bg-[#A04F11] text-white font-bold rounded-xl text-xs shadow-sm transition-all cursor-pointer active:scale-95"
-              >
-                {isLoggingIn ? 'Authenticating...' : 'Access Admin Portal'}
-              </button>
-            </form>
-          </div>
-        ) : (
-          /* AUTHENTICATED ADMIN DASHBOARD */
-          <div className="flex-1 flex flex-col overflow-hidden bg-[#FAF6F0]">
-            
-            {/* Top Admin Nav */}
-            <div className="flex border-b border-[#E6DCCF] bg-white px-3 py-2 gap-2 overflow-x-auto scrollbar-none">
-              {[
-                { id: 'batches', label: 'Manage Batches' },
-                { id: 'add_batch', label: '+ New Batch' },
-                { id: 'customize', label: '🎨 Batch Customization' },
-                { id: 'add_content', label: '+ Add Materials' },
-              ].map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => {
-                    setActiveTab(t.id as any);
-                    if (t.id === 'customize' && batches[0]) {
-                      loadBatchToEdit(batches[0].id);
-                    }
-                  }}
+                key={t.id}
+                onClick={() => {
+                  setActiveTab(t.id as any);
+                  if (t.id === 'customize' && batches[0]) {
+                    loadBatchToEdit(batches[0].id);
+                  }
+                }}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
                     activeTab === t.id
                       ? 'bg-[#B85B14] text-white shadow-xs'
@@ -1351,7 +1261,6 @@ Explanation: Photosynthesis converts light energy into chemical energy.`}
 
             </div>
           </div>
-        )}
 
       </div>
 
