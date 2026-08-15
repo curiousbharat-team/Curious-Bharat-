@@ -6,6 +6,7 @@ const archiver: any = (archiverModule as any).default || archiverModule;
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
 import { Batch, AdvertisementBanner, ContentItem, AppSyncData } from './src/types';
+import { firestoreDb, storageBucket } from './server/firebaseAdmin';
 
 const app = express();
 const PORT = 3000;
@@ -229,6 +230,39 @@ const STORE_PATH = path.join(process.cwd(), 'data_store.json');
 
 let deviceAnalyticsStore: Record<string, any> = {};
 
+async function syncWithFirestore() {
+  if (!firestoreDb) return;
+  try {
+    const docRef = firestoreDb.collection('app_data').doc('curious_bharat_state');
+    const docSnap = await docRef.get();
+    if (docSnap.exists) {
+      const data = docSnap.data() as any;
+      if (data) {
+        if (data.batches && Array.isArray(data.batches)) {
+          initialBatches = data.batches;
+        }
+        if (data.banners && Array.isArray(data.banners)) {
+          advertisementBanners = data.banners;
+        }
+        if (data.lastServerUpdate) lastServerUpdate = data.lastServerUpdate;
+        if (data.deviceAnalytics) deviceAnalyticsStore = { ...deviceAnalyticsStore, ...data.deviceAnalytics };
+        console.log(`[Firebase] Loaded ${initialBatches.length} batches from Firestore (curious-bharat-e3c65)`);
+      }
+    } else {
+      // Seed Firestore with initial state
+      await docRef.set({
+        batches: initialBatches,
+        banners: advertisementBanners,
+        lastServerUpdate,
+        deviceAnalytics: deviceAnalyticsStore
+      });
+      console.log('[Firebase] Initialized and seeded Firestore curious-bharat-e3c65');
+    }
+  } catch (err) {
+    console.error('[Firebase] Firestore sync failed:', err);
+  }
+}
+
 function loadStore() {
   try {
     if (fs.existsSync(STORE_PATH)) {
@@ -246,6 +280,9 @@ function loadStore() {
   } catch (err) {
     console.error('Error loading store from disk:', err);
   }
+
+  // Also sync with Firebase in background
+  syncWithFirestore().catch(e => console.error('Initial firestore load error:', e));
 }
 
 function saveStore() {
@@ -258,6 +295,13 @@ function saveStore() {
       deviceAnalytics: deviceAnalyticsStore
     };
     fs.writeFileSync(STORE_PATH, JSON.stringify(data, null, 2), 'utf-8');
+
+    // Async push to Firebase Firestore
+    if (firestoreDb) {
+      firestoreDb.collection('app_data').doc('curious_bharat_state').set(data).catch(err => {
+        console.error('[Firebase] Error saving to Firestore:', err);
+      });
+    }
   } catch (err) {
     console.error('Error saving store to disk:', err);
   }
@@ -282,6 +326,117 @@ const getGenAI = (req?: express.Request, customKeyOverride?: string) => {
     },
   });
 };
+
+// Firebase Status & Synchronization Endpoints
+app.get('/api/firebase/status', async (req, res) => {
+  let isFirestoreOk = false;
+  let isStorageOk = false;
+  let errorMsg = null;
+
+  try {
+    if (firestoreDb) {
+      const pingDoc = await firestoreDb.collection('app_data').doc('curious_bharat_state').get();
+      isFirestoreOk = true;
+    }
+  } catch (err: any) {
+    errorMsg = err.message || 'Firestore connection check failed';
+  }
+
+  try {
+    if (storageBucket) {
+      isStorageOk = true;
+    }
+  } catch (e) {}
+
+  res.json({
+    connected: isFirestoreOk,
+    projectId: 'curious-bharat-e3c65',
+    storageBucket: 'curious-bharat-e3c65.firebasestorage.app',
+    firestore: isFirestoreOk ? 'Connected & Active' : 'Disconnected',
+    storage: isStorageOk ? 'Ready' : 'Pending',
+    batchCount: initialBatches.length,
+    lastServerUpdate,
+    error: errorMsg
+  });
+});
+
+app.post('/api/firebase/sync', async (req, res) => {
+  try {
+    await syncWithFirestore();
+    saveStore();
+    res.json({
+      success: true,
+      message: 'Successfully synchronized with Firebase Firestore (curious-bharat-e3c65)',
+      batchCount: initialBatches.length,
+      lastServerUpdate
+    });
+  } catch (err: any) {
+    res.status(500).json({
+      success: false,
+      message: err.message || 'Failed to force sync with Firebase'
+    });
+  }
+});
+
+// Direct Firebase Storage File/Media Upload API
+app.post('/api/storage/upload', async (req, res) => {
+  try {
+    const { dataUrl, filename, folder = 'uploads' } = req.body;
+    if (!dataUrl || !filename) {
+      return res.status(400).json({ error: 'dataUrl and filename are required' });
+    }
+
+    if (!storageBucket) {
+      return res.status(500).json({ error: 'Firebase Storage bucket is not initialized' });
+    }
+
+    // Parse base64
+    const matches = dataUrl.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    let buffer: Buffer;
+    let contentType = 'application/octet-stream';
+
+    if (matches && matches.length === 3) {
+      contentType = matches[1];
+      buffer = Buffer.from(matches[2], 'base64');
+    } else {
+      buffer = Buffer.from(dataUrl, 'base64');
+    }
+
+    const cleanFilename = `${Date.now()}_${filename.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+    const filePath = `${folder}/${cleanFilename}`;
+    const file = storageBucket.file(filePath);
+
+    await file.save(buffer, {
+      metadata: {
+        contentType,
+      },
+      public: true,
+    });
+
+    // Make public or get public download URL
+    try {
+      await file.makePublic();
+    } catch (e) {
+      // Ignored if bucket policy handles uniform permissions
+    }
+
+    const publicUrl = `https://storage.googleapis.com/${storageBucket.name}/${filePath}`;
+
+    res.json({
+      success: true,
+      url: publicUrl,
+      filename: cleanFilename,
+      size: buffer.length,
+      contentType
+    });
+  } catch (err: any) {
+    console.error('Storage upload error:', err);
+    res.status(500).json({
+      success: false,
+      error: err.message || 'Failed to upload file to Firebase Storage'
+    });
+  }
+});
 
 // API ROUTES
 app.get('/api/state', (req, res) => {

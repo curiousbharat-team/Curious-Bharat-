@@ -346,3 +346,31 @@ export async function generateQuizFromRandomText(randomText: string) {
   });
   return res.json();
 }
+
+export async function fetchFirebaseStatus() {
+  try {
+    const res = await fetch('/api/firebase/status');
+    return await res.json();
+  } catch (err: any) {
+    return { connected: false, error: err.message || 'Failed to reach server' };
+  }
+}
+
+export async function triggerFirebaseCloudSync() {
+  try {
+    const res = await fetch('/api/firebase/sync', { method: 'POST' });
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, message: err.message || 'Sync request failed' };
+  }
+}
+
+export async function uploadToFirebaseStorage(dataUrl: string, filename: string, folder = 'materials') {
+  const res = await fetch('/api/storage/upload', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dataUrl, filename, folder }),
+  });
+  return await res.json();
+}
+
