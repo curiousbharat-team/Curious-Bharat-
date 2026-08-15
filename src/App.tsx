@@ -55,7 +55,7 @@ export default function App() {
       setSelectedFolderBatch(prev => {
         if (!prev) return null;
         const updated = data.batches?.find(b => b.id === prev.id);
-        return updated || prev;
+        return updated || null;
       });
     }
     if (data.banners) setBanners(data.banners);

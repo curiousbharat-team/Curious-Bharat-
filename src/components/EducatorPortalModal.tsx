@@ -302,14 +302,35 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
   // Delete confirmation state
   const [deletingBatchId, setDeletingBatchId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteStatusMsg, setDeleteStatusMsg] = useState<string | null>(null);
 
   const handleDeleteBatch = async (id: string) => {
+    const target = batches.find(b => b.id === id);
+    const title = target?.title || 'Batch';
     setIsDeleting(true);
     try {
       await deleteBatch(id);
       onRefreshData();
+      setDeleteStatusMsg(`"${title}" deleted successfully.`);
+      setTimeout(() => setDeleteStatusMsg(null), 3000);
+
+      // Adjust selections if deleted batch was active
+      if (editBatchId === id) {
+        const remaining = batches.filter(b => b.id !== id);
+        if (remaining.length > 0) {
+          loadBatchToEdit(remaining[0].id);
+        } else {
+          setEditBatchId('');
+          setActiveTab('batches');
+        }
+      }
+      if (selectedBatchId === id) {
+        const remaining = batches.filter(b => b.id !== id);
+        setSelectedBatchId(remaining[0]?.id || '');
+      }
     } catch (err) {
       console.error('Failed to delete batch:', err);
+      alert('Failed to delete batch. Please try again.');
     } finally {
       setIsDeleting(false);
       setDeletingBatchId(null);
@@ -374,6 +395,15 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
               {/* VIEW 1: MANAGE BATCHES */}
               {activeTab === 'batches' && (
                 <div className="space-y-3">
+                  {deleteStatusMsg && (
+                    <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold flex items-center justify-between animate-fadeIn">
+                      <span>✓ {deleteStatusMsg}</span>
+                      <button onClick={() => setDeleteStatusMsg(null)} className="text-emerald-600 hover:text-emerald-900 cursor-pointer">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between">
                     <h4 className="text-xs font-extrabold text-[#382820]">Active Live Batches ({batches.length})</h4>
                     <button
@@ -384,7 +414,18 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
                     </button>
                   </div>
 
-                  {batches.map((b) => (
+                  {batches.length === 0 ? (
+                    <div className="p-8 bg-white border border-[#E6DCCF] rounded-2xl text-center space-y-2">
+                      <p className="text-xs text-[#7A6B63] font-medium">No live batches currently active.</p>
+                      <button
+                        onClick={() => setActiveTab('add_batch')}
+                        className="px-3 py-1.5 bg-[#B85B14] hover:bg-[#A04F11] text-white font-bold rounded-xl text-xs cursor-pointer shadow-xs"
+                      >
+                        + Create Your First Batch
+                      </button>
+                    </div>
+                  ) : (
+                    batches.map((b) => (
                     <div
                       key={b.id}
                       className="bg-white border border-[#E6DCCF] rounded-2xl p-3.5 space-y-3 shadow-xs"
@@ -534,7 +575,8 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
                         </button>
                       </div>
                     </div>
-                  ))}
+                  ))
+                  )}
                 </div>
               )}
 
@@ -929,13 +971,49 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
                     />
                   </div>
 
-                  <button
-                    type="submit"
-                    disabled={isSavingEdit}
-                    className="w-full py-2.5 bg-[#B85B14] hover:bg-[#A04F11] text-white font-bold rounded-xl text-xs shadow-sm transition-all cursor-pointer active:scale-95"
-                  >
-                    {isSavingEdit ? 'Saving Customizations...' : 'Save Batch Customizations'}
-                  </button>
+                  <div className="pt-2 border-t border-[#E6DCCF] space-y-2">
+                    <button
+                      type="submit"
+                      disabled={isSavingEdit}
+                      className="w-full py-2.5 bg-[#B85B14] hover:bg-[#A04F11] text-white font-bold rounded-xl text-xs shadow-sm transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-1.5"
+                    >
+                      {isSavingEdit ? 'Saving Customizations...' : 'Save Batch Customizations'}
+                    </button>
+
+                    {/* Delete Batch Option from Customization Tab */}
+                    {deletingBatchId === editBatchId ? (
+                      <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center justify-between text-xs animate-fadeIn">
+                        <span className="font-bold text-rose-800 text-[11px]">Confirm deleting this batch permanently?</span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteBatch(editBatchId)}
+                            disabled={isDeleting}
+                            className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg text-xs shadow-xs disabled:opacity-50 cursor-pointer"
+                          >
+                            {isDeleting ? 'Deleting...' : 'Yes, Delete Batch'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDeletingBatchId(null)}
+                            disabled={isDeleting}
+                            className="px-2.5 py-1.5 bg-[#E6DCCF] hover:bg-[#D5C8B8] text-[#382820] font-bold rounded-lg text-xs cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setDeletingBatchId(editBatchId)}
+                        className="w-full py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold rounded-xl text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Delete This Batch (Remove from Student UI)</span>
+                      </button>
+                    )}
+                  </div>
                 </form>
               )}
 

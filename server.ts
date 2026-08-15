@@ -234,10 +234,10 @@ function loadStore() {
     if (fs.existsSync(STORE_PATH)) {
       const raw = fs.readFileSync(STORE_PATH, 'utf-8');
       const parsed = JSON.parse(raw);
-      if (parsed.batches && Array.isArray(parsed.batches) && parsed.batches.length > 0) {
+      if (parsed.batches && Array.isArray(parsed.batches)) {
         initialBatches = parsed.batches;
       }
-      if (parsed.banners && Array.isArray(parsed.banners) && parsed.banners.length > 0) {
+      if (parsed.banners && Array.isArray(parsed.banners)) {
         advertisementBanners = parsed.banners;
       }
       if (parsed.lastServerUpdate) lastServerUpdate = parsed.lastServerUpdate;

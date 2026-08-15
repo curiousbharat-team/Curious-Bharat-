@@ -22,7 +22,7 @@ export function subscribeToRealtimeAppState(
       async (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.data() as AppSyncData;
-          if (data && data.batches && data.batches.length > 0) {
+          if (data && Array.isArray(data.batches)) {
             onUpdate(data);
             return;
           }
@@ -33,7 +33,7 @@ export function subscribeToRealtimeAppState(
           if (fallbackData) {
             onUpdate(fallbackData);
             // Seed Firestore with initial state in background
-            await setDoc(docRef, fallbackData, { merge: true });
+            await setDoc(docRef, fallbackData);
           }
         } catch (e: any) {
           if (onError) onError(e);
@@ -55,7 +55,7 @@ export function subscribeToRealtimeAppState(
 export async function pushAppStateToFirestore(data: AppSyncData): Promise<void> {
   try {
     const docRef = doc(db, 'app_data', APP_DATA_DOC);
-    await setDoc(docRef, data, { merge: true });
+    await setDoc(docRef, data);
   } catch (err) {
     console.error('Failed to push state to Firestore:', err);
   }
