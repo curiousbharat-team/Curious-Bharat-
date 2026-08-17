@@ -133,72 +133,6 @@ let initialBatches: Batch[] = [
         createdAt: new Date().toISOString(),
       }
     ]
-  },
-  {
-    id: 'batch-chemistry-matter',
-    title: 'Chemistry & The Material Universe',
-    subtitle: 'Atoms, Bonds, Reactions & Molecular Wonders',
-    description: 'Look microscopic! Discover how the periodic table builds everything around us—from water and DNA to rust, polymers, and green chemistry.',
-    category: 'Chemistry & Matter',
-    isPaid: false,
-    price: 0,
-    bannerGradient: 'from-[#382820] via-[#5C4033] to-[#8C4A1B]',
-    thumbnailTag: 'MOLECULAR EXPLORER',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&auto=format&fit=crop&q=80',
-    heroImageUrl: 'https://images.unsplash.com/photo-1507668077129-56e32842fceb?w=1000&auto=format&fit=crop&q=80',
-    enrolledCount: 15200,
-    rating: 4.92,
-    educatorName: 'Priyanshu Tiwari',
-    createdAt: new Date().toISOString(),
-    contents: [
-      {
-        id: 'c-201',
-        batchId: 'batch-chemistry-matter',
-        folderCategory: 'videos',
-        type: 'video',
-        title: 'Chemical Bonding: Why Atoms Share & Steal Electrons',
-        description: 'VSEPR theory, ionic vs covalent lattices, and hydrogen bonding in liquid water.',
-        url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-        duration: '40m',
-        createdAt: new Date().toISOString(),
-      }
-    ]
-  },
-  {
-    id: 'batch-biology-life',
-    title: 'Biological Wonder & The Living Earth',
-    subtitle: 'Cellular Machines, DNA, Genetics & Ecosystem Balance',
-    description: 'Investigate the wonder of life: how microscopic cells generate energy, how genetic code shapes biodiversity, and how living systems adapt.',
-    category: 'Biology & Life',
-    isPaid: false,
-    price: 0,
-    bannerGradient: 'from-[#4D6B40] via-[#5C7E4E] to-[#739B62]',
-    thumbnailTag: 'LIFE SCIENCES',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1530026405186-ed1f139313f8?w=600&auto=format&fit=crop&q=80',
-    heroImageUrl: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1000&auto=format&fit=crop&q=80',
-    enrolledCount: 22100,
-    rating: 4.98,
-    educatorName: 'Priyanshu Tiwari',
-    createdAt: new Date().toISOString(),
-    contents: []
-  },
-  {
-    id: 'batch-maths-patterns',
-    title: 'Pure Mathematics & Logical Beauty',
-    subtitle: 'Calculus, Geometry, Fractals & Number Theory',
-    description: 'Unravel the universal language of patterns. Explore symmetry, infinite series, golden ratios, and the power of mathematical reasoning.',
-    category: 'Maths & Logic',
-    isPaid: false,
-    price: 0,
-    bannerGradient: 'from-[#1A2E3B] via-[#2A4355] to-[#3B5B70]',
-    thumbnailTag: 'PATTERNS & LOGIC',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&auto=format&fit=crop&q=80',
-    heroImageUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1000&auto=format&fit=crop&q=80',
-    enrolledCount: 12900,
-    rating: 4.90,
-    educatorName: 'Priyanshu Tiwari',
-    createdAt: new Date().toISOString(),
-    contents: []
   }
 ];
 
@@ -211,15 +145,6 @@ let advertisementBanners: AdvertisementBanner[] = [
     badge: 'SCIENCE EXPLORATION',
     batchId: 'batch-physics-cosmos',
     ctaText: 'Start Exploring'
-  },
-  {
-    id: 'banner-2',
-    title: 'Cellular Machines: How DNA & Life Work',
-    subtitle: 'Free immersive modules on genetics, photosynthesis, and natural biodiversity.',
-    bgGradient: 'from-[#33472A] via-[#4D6B40] to-[#6A8E58]',
-    badge: 'LIFE SCIENCES',
-    batchId: 'batch-biology-life',
-    ctaText: 'Discover Life Sciences'
   }
 ];
 

@@ -1,0 +1,115 @@
+{
+  "batches": [
+    {
+      "id": "batch-physics-cosmos",
+      "title": "Physics of the Cosmos & Forces of Nature",
+      "subtitle": "Gravity, Motion, Energy & Quantum Phenomena",
+      "description": "Explore how nature works at every scale—from falling apples and planetary orbits to thermodynamics, electromagnetism, and the mind-bending world of quantum mechanics.",
+      "category": "Physics & Cosmos",
+      "isPaid": false,
+      "price": 0,
+      "bannerGradient": "from-[#B85B14] via-[#C86D27] to-[#D99B5A]",
+      "thumbnailTag": "DISCOVERY MODULE",
+      "thumbnailUrl": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600&auto=format&fit=crop&q=80",
+      "heroImageUrl": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1000&auto=format&fit=crop&q=80",
+      "enrolledCount": 18400,
+      "rating": 4.95,
+      "educatorName": "Priyanshu Tiwari",
+      "createdAt": "2026-08-15T10:16:00.000Z",
+      "contents": [
+        {
+          "id": "c-101",
+          "batchId": "batch-physics-cosmos",
+          "folderCategory": "videos",
+          "type": "video",
+          "title": "Why Do Things Fall? Gravity & Curved Spacetime Explored",
+          "description": "An intuitive journey from Newton's apple to Einstein's general relativity with visual simulations.",
+          "url": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+          "duration": "45m",
+          "createdAt": "2026-08-15T10:16:00.000Z"
+        },
+        {
+          "id": "c-102",
+          "batchId": "batch-physics-cosmos",
+          "folderCategory": "videos",
+          "type": "video",
+          "title": "The Mystery of Light: Wave, Particle, or Both?",
+          "description": "Understanding Young's double-slit experiment, photons, and quantum interference.",
+          "url": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+          "duration": "50m",
+          "createdAt": "2026-08-15T10:16:00.000Z"
+        },
+        {
+          "id": "c-103",
+          "batchId": "batch-physics-cosmos",
+          "folderCategory": "pdfs",
+          "type": "pdf",
+          "title": "Fundamental Constants & Laws of Motion Visual Guide",
+          "description": "Beautifully illustrated guide to Newton's laws, conservation of momentum, and rotational torque.",
+          "fileSize": "3.8 MB",
+          "url": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+          "createdAt": "2026-08-15T10:16:00.000Z"
+        },
+        {
+          "id": "c-104",
+          "batchId": "batch-physics-cosmos",
+          "folderCategory": "study_material",
+          "type": "dpp",
+          "title": "Observation Exercise: Measuring Gravity at Home",
+          "description": "Simple pendulum experiments you can conduct with a string and phone stopwatch.",
+          "fileSize": "1.5 MB",
+          "createdAt": "2026-08-15T10:16:00.000Z"
+        },
+        {
+          "id": "c-105",
+          "batchId": "batch-physics-cosmos",
+          "folderCategory": "tests",
+          "type": "test",
+          "title": "Curiosity Quiz: Forces, Energy & Light",
+          "description": "Test your intuitive understanding of physical principles without formula memorization.",
+          "duration": "20 mins",
+          "questions": [
+            {
+              "id": "q1",
+              "question": "Why does a spinning ice skater rotate faster when pulling their arms inward?",
+              "options": [
+                "Conservation of Angular Momentum (Moment of inertia decreases, so angular velocity increases)",
+                "Centripetal acceleration pushes them faster",
+                "Air resistance decreases when arms are close",
+                "Gravitational pull increases toward the center"
+              ],
+              "correctIndex": 0,
+              "explanation": "When arms are drawn in, mass is closer to the rotation axis, decreasing moment of inertia (I). Because angular momentum L = I·ω is conserved, angular velocity ω must increase."
+            },
+            {
+              "id": "q2",
+              "question": "If you shine red light and green light together onto a white wall, what color do your eyes perceive?",
+              "options": [
+                "Yellow",
+                "Cyan",
+                "Magenta",
+                "White"
+              ],
+              "correctIndex": 0,
+              "explanation": "In additive color mixing of light, combining red and green light stimulates the red and green cone photoreceptors in your retina, which your brain perceives as yellow."
+            }
+          ],
+          "createdAt": "2026-08-15T10:16:00.000Z"
+        }
+      ]
+    }
+  ],
+  "banners": [
+    {
+      "id": "banner-1",
+      "title": "Curiosity Unlocked: The Quantum World & Space-Time",
+      "subtitle": "Explore nature's deepest questions without exam pressures. Interactive videos, PDF visual guides & observation quizzes.",
+      "bgGradient": "from-[#382820] via-[#8C4A1B] to-[#B85B14]",
+      "badge": "SCIENCE EXPLORATION",
+      "batchId": "batch-physics-cosmos",
+      "ctaText": "Start Exploring"
+    }
+  ],
+  "lastServerUpdate": "2026-08-15T10:16:00.000Z",
+  "deviceAnalytics": {}
+}
