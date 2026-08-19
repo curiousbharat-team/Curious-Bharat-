@@ -42,6 +42,175 @@ async function generateWithFallback(ai: GoogleGenAI, params: any) {
 // Initial Educator-Provided Batches (Curiosity & Science Driven)
 let initialBatches: Batch[] = [
   {
+    id: 'batch-class10-magnetism',
+    title: 'Magnetic Effects of Electric Current — Class 10th Physics',
+    subtitle: 'Magnetic Fields, Oersted Experiment, Solenoid, Fleming’s Rules & Electromagnetic Induction',
+    description: 'Master Class 10 Physics: Magnetic Effects of Electric Current from basic magnetic field lines to right-hand thumb rule, circular loop, solenoid, Fleming’s left-hand rule, electric motors, and domestic circuits with full concept video playlist and study guides.',
+    category: 'Class 10 Physics',
+    isPaid: false,
+    price: 0,
+    bannerGradient: 'from-[#1E3A8A] via-[#2563EB] to-[#60A5FA]',
+    thumbnailTag: 'CLASS 10 COMPLETE BATCH',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?w=600&auto=format&fit=crop&q=80',
+    heroImageUrl: 'https://images.unsplash.com/photo-1507668077129-56e32842fceb?w=1000&auto=format&fit=crop&q=80',
+    enrolledCount: 14200,
+    rating: 4.98,
+    educatorName: 'Priyanshu Tiwari',
+    showConceptTab: true,
+    showStudyMaterialTab: true,
+    showPracticeTab: true,
+    createdAt: new Date().toISOString(),
+    contents: [
+      {
+        id: 'c-mag-01',
+        batchId: 'batch-class10-magnetism',
+        folderCategory: 'videos',
+        type: 'video',
+        title: 'Complete Playlist: Magnetic Effects of Electric Current (Class 10 Physics)',
+        description: 'All-in-one curated YouTube playlist covering every lecture from basics to advanced board exam concepts.',
+        url: 'https://www.youtube.com/embed/videoseries?list=PLVutmhBrQCRQ',
+        duration: 'Full Playlist',
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: 'c-mag-02',
+        batchId: 'batch-class10-magnetism',
+        folderCategory: 'videos',
+        type: 'video',
+        title: 'Lecture 1: Introduction to Magnetism & Oersted’s Experiment',
+        description: 'Discovery of magnetic effect of current, magnetic field lines, and bar magnet properties.',
+        url: 'https://www.youtube.com/embed/videoseries?list=PLVutmhBrQCRQ&index=1',
+        duration: '42m',
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: 'c-mag-03',
+        batchId: 'batch-class10-magnetism',
+        folderCategory: 'videos',
+        type: 'video',
+        title: 'Lecture 2: Right-Hand Thumb Rule & Field Due to Straight Conductor',
+        description: 'Maxwell’s corkscrew rule, concentric field patterns, and factor dependencies.',
+        url: 'https://www.youtube.com/embed/videoseries?list=PLVutmhBrQCRQ&index=2',
+        duration: '38m',
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: 'c-mag-04',
+        batchId: 'batch-class10-magnetism',
+        folderCategory: 'videos',
+        type: 'video',
+        title: 'Lecture 3: Magnetic Field in Circular Loop & Solenoid',
+        description: 'Understanding electromagnetism, soft iron core magnetization, and uniform internal fields.',
+        url: 'https://www.youtube.com/embed/videoseries?list=PLVutmhBrQCRQ&index=3',
+        duration: '45m',
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: 'c-mag-05',
+        batchId: 'batch-class10-magnetism',
+        folderCategory: 'videos',
+        type: 'video',
+        title: 'Lecture 4: Force on Current-Carrying Conductor & Fleming’s Left-Hand Rule',
+        description: 'Direction of magnetic force (FBI rule), principle and working of Electric Motor.',
+        url: 'https://www.youtube.com/embed/videoseries?list=PLVutmhBrQCRQ&index=4',
+        duration: '50m',
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: 'c-mag-06',
+        batchId: 'batch-class10-magnetism',
+        folderCategory: 'videos',
+        type: 'video',
+        title: 'Lecture 5: Electromagnetic Induction, Domestic Circuits & Fuse/Earthing',
+        description: 'Faraday’s experiment, Fleming’s right-hand rule, live/neutral/earth wire connections & safety.',
+        url: 'https://www.youtube.com/embed/videoseries?list=PLVutmhBrQCRQ&index=5',
+        duration: '48m',
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: 'c-mag-07',
+        batchId: 'batch-class10-magnetism',
+        folderCategory: 'pdfs',
+        type: 'pdf',
+        title: 'Class 10 Magnetism Formula Sheet & Diagram Notes',
+        description: 'Comprehensive high-resolution visual summary with all rules, diagrams, and board question patterns.',
+        fileSize: '4.2 MB',
+        url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: 'c-mag-08',
+        batchId: 'batch-class10-magnetism',
+        folderCategory: 'study_material',
+        type: 'dpp',
+        title: 'Daily Practice Sheet (DPP): Magnetic Field & Hand Rules',
+        description: '15 conceptual and numerical problems for board preparation and concept clarity.',
+        fileSize: '1.8 MB',
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: 'c-mag-09',
+        batchId: 'batch-class10-magnetism',
+        folderCategory: 'tests',
+        type: 'test',
+        title: 'Class 10 Physics: Magnetic Effects Comprehensive Quiz',
+        description: 'Standard board level MCQs and conceptual assertion-reason questions with instant solutions.',
+        duration: '25 mins',
+        questions: [
+          {
+            id: 'mq1',
+            question: 'The direction of magnetic field lines produced by a straight current-carrying wire is given by:',
+            options: [
+              'Right-Hand Thumb Rule',
+              'Fleming’s Left-Hand Rule',
+              'Fleming’s Right-Hand Rule',
+              'Lenz’s Law'
+            ],
+            correctIndex: 0,
+            explanation: 'According to Maxwell’s Right-Hand Thumb Rule, if the thumb points in the direction of current, the curled fingers give the direction of magnetic field lines.'
+          },
+          {
+            id: 'mq2',
+            question: 'Inside a long current-carrying solenoid, the magnetic field is:',
+            options: [
+              'Uniform and parallel along the axis',
+              'Zero at all points',
+              'Decreases as we move towards the ends',
+              'Increases as we move towards the ends'
+            ],
+            correctIndex: 0,
+            explanation: 'Inside a solenoid, the magnetic field lines are in the form of parallel straight lines, indicating that the magnetic field is uniform at all points inside.'
+          },
+          {
+            id: 'mq3',
+            question: 'In Fleming’s Left-Hand Rule, the middle finger represents the direction of:',
+            options: [
+              'Electric Current',
+              'Magnetic Field',
+              'Force / Motion',
+              'Induced Voltage'
+            ],
+            correctIndex: 0,
+            explanation: 'In the FBI left-hand mnemonic: Thumb = Force/Motion (F), Forefinger = Magnetic Field (B), Middle Finger = Electric Current (I).'
+          },
+          {
+            id: 'mq4',
+            question: 'What is the function of an earth wire in domestic electrical appliances?',
+            options: [
+              'To provide a low-resistance path to the ground for leakage currents to prevent severe electric shock',
+              'To increase current capacity of appliances',
+              'To act as a backup live wire',
+              'To reduce electric bill'
+            ],
+            correctIndex: 0,
+            explanation: 'The metallic body of appliances is connected to the earth wire, ensuring that any current leakage flows safely to the ground and blows the fuse rather than shocking the user.'
+          }
+        ],
+        createdAt: new Date().toISOString(),
+      }
+    ]
+  },
+  {
     id: 'batch-physics-cosmos',
     title: 'Physics of the Cosmos & Forces of Nature',
     subtitle: 'Gravity, Motion, Energy & Quantum Phenomena',
@@ -137,6 +306,15 @@ let initialBatches: Batch[] = [
 ];
 
 let advertisementBanners: AdvertisementBanner[] = [
+  {
+    id: 'banner-magnetism',
+    title: 'Class 10th Physics: Magnetic Effects of Electric Current',
+    subtitle: 'Complete Video Playlist, Oersted Experiment, Solenoid, Fleming’s Rules & Solved DPPs.',
+    bgGradient: 'from-[#1E3A8A] via-[#2563EB] to-[#60A5FA]',
+    badge: 'CLASS 10 SPECIAL',
+    batchId: 'batch-class10-magnetism',
+    ctaText: 'Start Learning'
+  },
   {
     id: 'banner-1',
     title: 'Curiosity Unlocked: The Quantum World & Space-Time',

@@ -8,7 +8,7 @@ import { db } from './firebase';
 import { AppSyncData, Batch, AdvertisementBanner } from '../types';
 import { fetchAppState } from './api';
 
-const APP_DATA_DOC = 'global_app_state';
+const APP_DATA_DOC = 'curious_bharat_state';
 
 // Listen to real-time changes from Firestore passively
 export function subscribeToRealtimeAppState(

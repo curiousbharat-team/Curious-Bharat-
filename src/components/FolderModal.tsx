@@ -159,12 +159,24 @@ export const FolderModal: React.FC<FolderModalProps> = ({ batch, onClose, onRefr
   };
 
   const getYouTubeEmbedUrl = (url?: string) => {
-    let videoId = 'dQw4w9WgXcQ';
-    if (url) {
-      const match = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
-      if (match && match[1]) {
-        videoId = match[1];
+    if (!url) return 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&showinfo=0';
+    
+    // Check if it is a YouTube playlist URL
+    const playlistMatch = url.match(/[?&]list=([a-zA-Z0-9_-]+)/);
+    if (playlistMatch && playlistMatch[1]) {
+      const playlistId = playlistMatch[1];
+      // Check if a specific video ID is also present in the playlist URL
+      const videoMatch = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
+      if (videoMatch && videoMatch[1]) {
+        return `https://www.youtube.com/embed/${videoMatch[1]}?list=${playlistId}&autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&showinfo=0`;
       }
+      return `https://www.youtube.com/embed/videoseries?list=${playlistId}&autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&showinfo=0`;
+    }
+
+    let videoId = 'dQw4w9WgXcQ';
+    const match = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
+    if (match && match[1]) {
+      videoId = match[1];
     }
     return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&showinfo=0`;
   };
