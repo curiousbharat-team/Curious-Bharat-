@@ -33,6 +33,7 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
   const [newBatchPrice, setNewBatchPrice] = useState('0');
   const [newBatchThumbnail, setNewBatchThumbnail] = useState('https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600&auto=format&fit=crop&q=80');
   const [newBatchHeroImage, setNewBatchHeroImage] = useState('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1000&auto=format&fit=crop&q=80');
+  const [isPublishingBatch, setIsPublishingBatch] = useState(false);
 
   // Edit/Customize Batch Form
   const [editBatchId, setEditBatchId] = useState<string>(batches[0]?.id || '');
@@ -261,28 +262,43 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
 
   const handleCreateBatch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newBatchTitle || !newBatchDesc) return;
+    const title = newBatchTitle.trim();
+    if (!title) return;
 
-    await createBatch({
-      title: newBatchTitle,
-      subtitle: newBatchSubtitle || `${newBatchCategory} Special`,
-      showConceptTab: newBatchShowConceptTab,
-      showStudyMaterialTab: newBatchShowStudyMaterialTab,
-      showPracticeTab: newBatchShowPracticeTab,
-      description: newBatchDesc,
-      category: newBatchCategory,
-      isPaid: newBatchIsPaid,
-      price: newBatchIsPaid ? Number(newBatchPrice) : 0,
-      thumbnailUrl: newBatchThumbnail,
-      heroImageUrl: newBatchHeroImage,
-      educatorName: 'Priyanshu Tiwari',
-    });
+    setIsPublishingBatch(true);
+    const description = newBatchDesc.trim() || `Comprehensive curriculum and study materials for ${title}.`;
+    const subtitle = newBatchSubtitle.trim() || `${newBatchCategory} Special`;
 
-    setNewBatchTitle('');
-    setNewBatchSubtitle('');
-    setNewBatchDesc('');
-    onRefreshData();
-    setActiveTab('batches');
+    try {
+      await createBatch({
+        title,
+        subtitle,
+        showConceptTab: newBatchShowConceptTab,
+        showStudyMaterialTab: newBatchShowStudyMaterialTab,
+        showPracticeTab: newBatchShowPracticeTab,
+        description,
+        category: newBatchCategory || 'Physics & Cosmos',
+        isPaid: newBatchIsPaid,
+        price: newBatchIsPaid ? Number(newBatchPrice) : 0,
+        thumbnailUrl: newBatchThumbnail,
+        heroImageUrl: newBatchHeroImage,
+        educatorName: 'Priyanshu Tiwari',
+      });
+
+      setNewBatchTitle('');
+      setNewBatchSubtitle('');
+      setNewBatchDesc('');
+      setDeleteStatusMsg(`"${title}" published to live app successfully!`);
+      setTimeout(() => setDeleteStatusMsg(null), 3000);
+      onRefreshData();
+      setActiveTab('batches');
+    } catch (err) {
+      console.error('Failed to create batch:', err);
+      onRefreshData();
+      setActiveTab('batches');
+    } finally {
+      setIsPublishingBatch(false);
+    }
   };
 
   const handleSaveEditBatch = async (e: React.FormEvent) => {
@@ -870,9 +886,24 @@ export const EducatorPortalModal: React.FC<EducatorPortalModalProps> = ({
 
                   <button
                     type="submit"
-                    className="w-full py-2.5 bg-[#B85B14] hover:bg-[#A04F11] text-white font-bold rounded-xl text-xs mt-2 shadow-sm cursor-pointer active:scale-95 transition-all"
+                    disabled={isPublishingBatch || !newBatchTitle.trim()}
+                    className={`w-full py-2.5 font-bold rounded-xl text-xs mt-2 shadow-sm transition-all flex items-center justify-center gap-2 ${
+                      isPublishingBatch || !newBatchTitle.trim()
+                        ? 'bg-[#E6DCCF] text-[#A0938A] cursor-not-allowed'
+                        : 'bg-[#B85B14] hover:bg-[#A04F11] text-white cursor-pointer active:scale-95'
+                    }`}
                   >
-                    Publish Batch to Live App
+                    {isPublishingBatch ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Publishing Batch to Live App...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Publish Batch to Live App</span>
+                      </>
+                    )}
                   </button>
                 </form>
               )}
